@@ -1,0 +1,85 @@
+version: "3.10"
+
+services:
+  doc-mgmt:
+    image: doc-mgmt:latest
+    container_name: doc-mgmt-0001
+    environment:
+      - "GOTENBERG__URL=http://gotenberg-0001:3000"
+      - "STORAGE__ENDPOINT_URL=http://minio-0001:9000"
+      - "AWS_DEFAULT_REGION=us-east-1"
+    profiles:
+      - backend
+    restart: always
+    volumes:
+      - "./:/code"
+    entrypoint: [ "./scripts/backend.sh" ]
+    tty: true
+    ports:
+      - "8000:8000"
+    networks:
+      - doc-mgmt-backend-network
+    depends_on:
+      - gotenberg
+      - minio
+
+  gotenberg:
+    image: gotenberg/gotenberg:7.7.0
+    container_name: gotenberg-0001
+    profiles:
+      - backend
+      - tests
+    restart: always
+    command:
+      - "gotenberg"
+      - "--uno-listener-restart-threshold=0"
+      - "--uno-listener-start-timeout=10s"
+      - "--api-timeout=30s"
+    ports:
+      - "3000:3000"
+    networks:
+      - doc-mgmt-backend-network
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio-0001
+    profiles:
+      - backend
+      - tests
+    ports:
+      - "9000:9000"
+      - "9090:9090"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: IZts0i8E9E2slIkv
+    volumes:
+      - minio-volume:/data
+    command: server --console-address ":9090" /data/
+    networks:
+      - doc-mgmt-backend-network
+
+  dynamodb:
+    image: localstack/localstack:latest
+    container_name: dynamodb-0001
+    profiles:
+      - backend
+      - tests
+    environment:
+      - AWS_DEFAULT_REGION=us-east-1
+      - EDGE_PORT=4566
+      - SERVICES=dynamodb
+      - KINESIS_PROVIDER=kinesalite
+    ports:
+      - '4566:4566'
+    volumes:
+      - localstack-volume:/var/lib/localstack
+    networks:
+      - doc-mgmt-backend-network
+
+volumes:
+  minio-volume:
+  localstack-volume:
+
+networks:
+  doc-mgmt-backend-network:
+    driver: bridge
