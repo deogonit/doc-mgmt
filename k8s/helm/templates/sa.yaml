@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.namespace }}-sa
+  namespace: {{ .Values.namespace }}
+  labels:
+    name: {{ .Values.namespace }}-sa
+    {{- include "common.labels" . | nindent 4 }}
+  annotations:
+    eks.amazonaws.com/role-arn: {{ .Values.service_account.role_arn}}
+{{- if (.Values.secrets.private_registry).image_pull_secret }}
+imagePullSecrets:
+  - name: {{ .Values.secrets.private_registry.image_pull_secret }}
+{{- end }}

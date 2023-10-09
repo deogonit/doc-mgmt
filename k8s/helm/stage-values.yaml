@@ -1,0 +1,193 @@
+# Global
+app_name: doc-mgmt
+namespace: stage-doc-mgmt
+environment: &environment stage
+full_app_name: &full_app_name doc-mgmt-stage
+secrets_name: &secrets_name stage-doc-mgmt-secrets
+environment_file: &environment_file stage-doc-mgmt-environment-file
+ingress_host: &ingress_host stage-doc-mgmt.prime.coverwhale.dev
+ingress_public_webhook_host: &ingress_public_webhook_host stage-webhook-doc-mgmt.prime.coverwhale.dev
+region: us-east-1
+
+# Service
+service:
+  type: ClusterIP
+  port: &port 8000
+
+# Deployment
+deployment:
+  replicaCount: 1
+  entrypoint: ["scripts/backend.sh"]
+  image:
+    registry: *full_app_name
+    name: *full_app_name
+    pullPolicy: IfNotPresent
+    tag: latest
+
+  resources:
+    limits:
+      cpu: 1500m
+      memory: 1536Mi
+    requests:
+      cpu: 1000m
+      memory: 1024Mi
+
+  envFrom:
+    - configMapRef:
+        name: *environment_file
+
+  env:
+    - name: DOCU_SIGN__CLIENT_ID
+      valueFrom:
+        secretKeyRef:
+          name: *secrets_name
+          key: DOCU_SIGN__CLIENT_ID
+    - name: DOCU_SIGN__PRIVATE_KEY_ENCODED
+      valueFrom:
+        secretKeyRef:
+          name: *secrets_name
+          key: DOCU_SIGN__PRIVATE_KEY_ENCODED
+    - name: DOCU_SIGN__ACCOUNT_ID
+      valueFrom:
+        secretKeyRef:
+          name: *secrets_name
+          key: DOCU_SIGN__ACCOUNT_ID
+    - name: DOCU_SIGN__IMPERSONATED_USER_ID
+      valueFrom:
+        secretKeyRef:
+          name: *secrets_name
+          key: DOCU_SIGN__IMPERSONATED_USER_ID
+    - name: NEW_RELIC_LICENSE_KEY
+      valueFrom:
+        secretKeyRef:
+          name: *secrets_name
+          key: NEW_RELIC_LICENSE_KEY
+    - name: AUTH__API_KEYS
+      valueFrom:
+        secretKeyRef:
+          name: *secrets_name
+          key: AUTH__API_KEYS
+
+  probes:
+    livenessProbe:
+      httpGet:
+        path: /health
+        port: *port
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 30
+    readinessProbe:
+      httpGet:
+        path: /ready
+        port: *port
+      initialDelaySeconds: 10
+      periodSeconds: 30
+      timeoutSeconds: 30
+
+  volumeMounts:
+    - mountPath: /var/log/doc-mgmt
+      name: doc-mgmt-logs
+  volumes:
+    - name: doc-mgmt-logs
+      emptyDir: {}
+
+# Autoscaling
+autoscaling:
+  enabled: true
+  minReplicas: 4
+  maxReplicas: 8
+  targetCPUUtilizationPercentage: 40
+  targetMemoryUtilizationPercentage: 60
+
+# Ingress
+ingress:
+  enabled: true
+  ingressClassName: alb
+  host: *ingress_host
+  path: /
+  pathType: Prefix
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internal
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/group.name: internal-apps
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+
+ingress_public:
+  enabled: true
+  ingressClassName: alb
+  host: *ingress_public_webhook_host
+  pathType: Prefix
+  api_path: /api
+  docs_path: /docs
+  openapi_path: /openapi.json
+  openapi_pathType: Exact
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/group.name: public-apps
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+
+# ConfigMap
+config_map:
+  data:
+    GOTENBERG__URL: https://stage-api-convertor.prime.coverwhale.dev
+    GOTENBERG__MIN_WAIT: "7"
+    GOTENBERG__MAX_WAIT: "9"
+    GOTENBERG__MAX_TIMEOUT: "30"
+    GOTENBERG__MAX_ATTEMPT: "3"
+    STORAGE__MAIN_BUCKET_NAME: stage-doc-mgmt.coverwhale.com
+    DYNAMO_STORAGE__DOCUMENTS_TABLE_NAME: stageDocuments
+    DYNAMO_STORAGE__ENVELOPES_TABLE_NAME: stageEnvelopes
+    DYNAMO_STORAGE__ENVELOPE_CALLBACKS_TABLE_NAME: stageEnvelopeCallbacks
+    DOCU_SIGN__WEBHOOK_URL: https://stage-webhook-doc-mgmt.prime.coverwhale.dev/api/v1/esign/webhook
+    DOCU_SIGN__AUTHORIZATION_SERVER: account.docusign.com
+    DOCU_SIGN__HOST: https://na4.docusign.net/restapi
+    DOCU_SIGN__POOL_MAX_SIZE: "32"
+    DOCU_SIGN__MIN_WAIT: "9"
+    DOCU_SIGN__MAX_WAIT: "15"
+    DOCU_SIGN__MAX_TIMEOUT: "50"
+    DOCU_SIGN__MAX_ATTEMPT: "3"
+    AUTH_DOCU_SIGN__DOMAIN: prime-coverwhale-prod.us.auth0.com
+    AUTH_DOCU_SIGN__API_AUDIENCE: https://auth0-doc-mgmt-docusign.prime.coverwhale.prod/
+    LOG_FILE_PATH: /var/log/doc-mgmt/application.log
+    NEW_RELIC_ENVIRONMENT: *environment
+    APP_VERSION: stage
+
+# ServiceAccount
+service_account:
+  role_arn: arn
+
+# Secrets
+secrets:
+  internal:
+    enabled: true
+    data:
+      DOCU_SIGN__CLIENT_ID: mock
+      DOCU_SIGN__PRIVATE_KEY_ENCODED: mock
+      DOCU_SIGN__ACCOUNT_ID: mock
+      DOCU_SIGN__IMPERSONATED_USER_ID: mock
+      NEW_RELIC_LICENSE_KEY: mock
+      AUTH__API_KEYS: mock
+  external:
+    enabled: false
+    refreshInterval: "0"
+    data:
+      - secretKey: DOCU_SIGN__CLIENT_ID
+        remoteRef:
+          key: /stage/docusign/client_id
+      - secretKey: DOCU_SIGN__PRIVATE_KEY_ENCODED
+        remoteRef:
+          key: /stage/docusign/private_key_encoded
+      - secretKey: DOCU_SIGN__ACCOUNT_ID
+        remoteRef:
+          key: /stage/docusign/account_id
+      - secretKey: DOCU_SIGN__IMPERSONATED_USER_ID
+        remoteRef:
+          key: /stage/docusign/impersonate_user_id
+      - secretKey: NEW_RELIC_LICENSE_KEY
+        remoteRef:
+          key: /stage/newrelic/nr_license_key

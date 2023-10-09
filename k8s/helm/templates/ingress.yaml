@@ -1,0 +1,68 @@
+---
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.environment }}-{{ .Values.app_name }}-ingress
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+  annotations:
+    {{- if (.Values.ingress).annotations }}
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.ingressClassName }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: {{ .Values.ingress.path }}
+            pathType: {{ .Values.ingress.pathType }}
+            backend:
+              service:
+                name: {{ .Values.environment }}-{{ .Values.app_name }}-service
+                port:
+                  number: {{ .Values.service.port }}
+{{- end }}
+---
+{{- if .Values.ingress_public.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.environment }}-{{ .Values.app_name }}-public-ingress
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+  annotations:
+    {{- if (.Values.ingress_public).annotations }}
+    {{- toYaml .Values.ingress_public.annotations | nindent 4 }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress_public.ingressClassName }}
+  rules:
+    - host: {{ .Values.ingress_public.host }}
+      http:
+        paths:
+          - path: {{ .Values.ingress_public.api_path }}
+            pathType: {{ .Values.ingress_public.pathType }}
+            backend:
+              service:
+                name: {{ .Values.environment }}-{{ .Values.app_name }}-service
+                port:
+                  number: {{ .Values.service.port }}
+          - path: {{ .Values.ingress_public.docs_path }}
+            pathType: {{ .Values.ingress_public.pathType }}
+            backend:
+              service:
+                name: {{ .Values.environment }}-{{ .Values.app_name }}-service
+                port:
+                  number: {{ .Values.service.port }}
+          - path: {{ .Values.ingress_public.openapi_path }}
+            pathType: {{ .Values.ingress_public.openapi_pathType }}
+            backend:
+              service:
+                name: {{ .Values.environment }}-{{ .Values.app_name }}-service
+                port:
+                  number: {{ .Values.service.port }}
+{{- end }}

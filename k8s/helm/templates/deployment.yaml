@@ -1,0 +1,55 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.environment }}-{{ .Values.app_name }}-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.environment }}-{{ .Values.app_name }}
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.deployment.replicaCount }}
+  {{- end }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.environment }}-{{ .Values.app_name }}
+        {{- include "common.labels" . | nindent 8 }}
+    spec:
+      serviceAccount: {{ .Values.namespace }}-sa
+      containers:
+        - image: {{ .Values.deployment.image.registry }}/{{ .Values.deployment.image.name }}:{{ .Values.deployment.image.tag }}
+          name: {{ .Values.app_name }}-{{ .Values.environment }}
+          command: {{ .Values.deployment.entrypoint }}
+          ports:
+            - name: service-port
+              containerPort: {{ .Values.service.port }}
+          {{- if (.Values.deployment.probes).livenessProbe }}
+          livenessProbe:
+            {{- toYaml .Values.deployment.probes.livenessProbe | nindent 12 }}
+          {{- end }}
+          {{- if (.Values.deployment.probes).readinessProbe }}
+          readinessProbe:
+            {{- toYaml .Values.deployment.probes.readinessProbe | nindent 12 }}
+          {{- end }}
+          {{- if (.Values.deployment).envFrom }}
+          envFrom:
+            {{- toYaml .Values.deployment.envFrom | nindent 12 }}
+          {{- end }}
+          {{- if (.Values.deployment).env }}
+          env:
+            {{- toYaml .Values.deployment.env | nindent 12 }}
+          {{- end }}
+          {{- if (.Values.deployment).resources }}
+          resources:
+            {{- toYaml .Values.deployment.resources | nindent 12 }}
+          {{- end }}
+      {{- if and (.Values.deployment).volumeMounts (.Values.deployment).volumes}}
+          volumeMounts:
+            {{- toYaml .Values.deployment.volumeMounts | nindent 12 }}
+      volumes:
+        {{- toYaml .Values.deployment.volumes | nindent 8 }}
+      {{- end }}

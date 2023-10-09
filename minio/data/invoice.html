@@ -1,0 +1,264 @@
+<html lang="en">
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <style>
+            body {
+                font-family: Arial, Helvetica, sans-serif;
+                color: #333;
+                padding: 10px;
+                font-size: 12px;
+            }
+
+            th {
+                font-weight: bold;
+                border-bottom: 1px solid #333;
+                background-color: #8f8e99;
+                text-align: left;
+                padding: 10px;
+            }
+
+            tr:nth-child(even) {
+                background-color: #f2f2f2
+            }
+
+            td {
+                padding: 10px;
+            }
+
+            .page-breaker {
+                page-break-after: always;
+                margin-bottom: 10px;
+            }
+
+            .section-header {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 10px;
+            }
+
+            .header {
+                text-align: center;
+            }
+
+            .table {
+                font-family: Arial, Helvetica, sans-serif;
+                border-collapse: collapse;
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <section class="page-breaker" id="page-1">
+            <div class="section-header">
+                <div>
+                    <img
+                        src="https://www.coverwhale.com/wp-content/uploads/2022/06/coverwhale_logo_purple.2560760b-1024x181.png"
+                        alt="logo"
+                        style="max-width: 300px"
+                    >
+                </div>
+                <div>
+                    <span style="font-size:10px;">
+                    Invoice - {{ invoice_name }} <br>
+                    AL Policy #: {{ al_policy_name }}<br>
+                    APD Policy #: {{ apd_policy_name }}<br>
+                    MTC Policy #: {{ mtc_policy_name }}<br>
+                    TGL Policy #: {{ tgl_policy_name }}<br>
+                    NTL Policy #: {{ ntl_policy_name }}<br>
+                    </span>
+                </div>
+            </div>
+            <div class="header">
+                <h1>Commercial Trucking Invoice for:</h1>
+                <h2>{{ trucking_invoice_name }}</h2>
+                <img
+                    src="https://xpodotcom.azureedge.net/xpo/newsroom/xpo-awards-top-brokerage-carriers-of-2021/Carriers_Blog-4.jpg"
+                    alt="motor-truck-image"
+                    style="max-width: 100%"
+                >
+                <br><br>
+            </div>
+            <div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th style="font-weight:bold;"></th>
+                            <th style="font-weight:bold;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight:bold;">Insured Name:</td>
+                            <td>
+                                {{ insured_name }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold;">Address:</td>
+                            <td>{{ short_address_name }}<br>{{ full_address_name }}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold;">Policy Term:</td>
+                            <td>From:
+                                <u>{{ from_date_time }}</u> <br>
+                                To: <u>{{ to_date_time }}</u>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold;">Broker Contact:</td>
+                            <td>{{ full_broker_contact }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="page-breaker" id="page-2">
+            <div class="section-header">
+                <div>
+                    <img
+                        src="https://www.coverwhale.com/wp-content/uploads/2022/06/coverwhale_logo_purple.2560760b-1024x181.png"
+                        alt="logo"
+                        style="max-width: 300px"
+                    >
+                </div>
+                <div>
+                    <span style="font-size:10px;">
+                    Invoice - {{ invoice_name }} <br>
+                    {{ trucking_invoice_name }}
+                    </span>
+                </div>
+            </div>
+            <div class="header">
+                <h2>INVOICE : AL Policy # {{ al_policy_name }}</h2>
+            </div>
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <th style="font-weight:bold;">Line Item</th>
+                        <th style="font-weight:bold;">Amount</th>
+                    </tr>
+                    <tr>
+                        <td>Total Premium - AL</td>
+                        <td>
+                            {{ total_premium }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Uninsured/Underinsured Motorists/Property Damage</td>
+                        <td>
+                            {{ uninsured_damage }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Personal Injury Protection</td>
+                        <td>
+                            {{ injury_protection }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Policy Fees</td>
+                        <td>
+                            {{ policy_fees }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Underwriting Fees</td>
+                        <td>
+                            {{ underwriting_fees }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Surplus Lines Taxes (0% )</td>
+                        <td>
+                            {{ lines_taxes }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Stamping Fees (0%)</td>
+                        <td>
+                            {{ stamping_fees }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Total Policy Cost</td>
+                        <td>
+                            {{ policy_cost }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="font-weight:bold; background-color:#868686;">Less Amounts Due to
+                            Broker
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Commission - AL (14.00% of Premium)</td>
+                        <td>
+                            {{ al_commission }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Surplus Lines Taxes - Broker to File and Remit Tax</td>
+                        <td>
+                            {{ surplus_lines_taxes }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Stamping Fees - Broker to File and Remit Tax</td>
+                        <td>
+                            {{ stamping_fees }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:16px;font-weight:bold;border-top:1px solid #000;background-color: yellow;">Net Due
+                            to: Cover Whale Insurance Solutions Inc.
+                        </td>
+                        <td
+                            style="font-size:16px;font-weight:bold;border-top:1px solid #000;background-color: yellow;">
+                            {{ net_due_to}}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="header">
+                <h2>DUE BY
+                    <u>
+                    {{ due_by_date }}
+                    </u>:
+                    <u>
+                    {{ due_by_cost }}
+                    </u>
+                </h2>
+                <p>
+                    Payments not received by <u>{{ due_by_date }}</u> subject to automatic cancellation
+                </p>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th colspan="2">Payment Instructions (via Mailed Check)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight:bold;">Checks Payable to:</td>
+                        <td>{{ check_payable_to }}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:bold;">Mailing Address:</td>
+                        <td>{{ mailing_address }}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:bold;">Memo (Insured Account #):</td>
+                        <td>{{ insured_account }}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:bold;">Questions:</td>
+                        <td>{{ email_to_questions }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </body>
+</html>
