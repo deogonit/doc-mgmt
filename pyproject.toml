@@ -2,7 +2,7 @@
 name = "doc-mgmt"
 version = "0.1.0"
 description = ""
-authors = ["Alexander Yanchenko <alexander.yanchenko@coverwhale.com>", "Bogdan Vlasyuk <bogdan.vlasyukcoverwhale.com>"]
+authors = ["Bogdan Vlasyuk"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
